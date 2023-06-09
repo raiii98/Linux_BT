@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
         {
             printf("I am the child process\n");
             printf("My PID is %d, My parent is %d\n", getpid(), getppid());
-            exit(0);
+            exit(0); // kết thúc bình thường gửi 1 thông báo với giá trị trong ham exit
         }
         else
         {
@@ -21,7 +21,12 @@ int main(int argc, char *argv[])
             result = waitpid(-1, &status, 0);
             printf("I am the parent process\n");
             printf("My PID is %d, ", getpid());
-            printf("Child status is %d\n", WEXITSTATUS(status));
+            if (WIFEXITED(status))
+            {
+                printf("I exited with status %d\n", WEXITSTATUS(status));
+                // WEXITSTATUS lấy ra giá trị được thông báo bởi chương trình con
+                // Khi mà chương trình con kết thúc 1 cách bình thường
+            }
         }
     }
     else
