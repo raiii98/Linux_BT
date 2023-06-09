@@ -4,7 +4,7 @@
 
 void notify()
 {
-    printf("The signal child process\n");
+    printf("The signal child process %d\n", SIGCHLD);
     wait(NULL);
 }
 int main(int argc, char *argv[])
@@ -16,8 +16,8 @@ int main(int argc, char *argv[])
         if (child_pid == 0)
         {
             printf("I am the child process\n");
-            while (1)
-                ;
+            // while (1)
+            //     ;
         }
         else
         {
