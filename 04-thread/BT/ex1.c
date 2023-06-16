@@ -1,10 +1,10 @@
 
 
-/* Viết một chương trình ghi 100000 kí tự A vào file test.txt 
-và tính toán thời gian thực hiện xong công việc này thông qua 
+/* Viết một chương trình ghi 100000 kí tự A vào file test.txt
+và tính toán thời gian thực hiện xong công việc này thông qua
 việc sử dụng lệnh time. (Lưu ý: chỉ dùng duy nhất main thread)*/
 
-                        /*HW*/
+/*HW*/
 /*- Sử dụng cấp phát động để cấp phát 1 chuỗi nhập vào
   - Sử dụng systemcall open, write, close để ghi 100000 lần chuỗi vào file
   - Sử dụng main thread để chạy làm write*/
@@ -14,13 +14,14 @@ việc sử dụng lệnh time. (Lưu ý: chỉ dùng duy nhất main thread)*/
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
-#include  <sys/time.h>
+#include <sys/time.h>
 
 char *dynamicString();
 void *writetxt(void *arg); // Đã chỉnh sửa tên hàm và khai báo đúng
 
 // Cấu trúc để lưu trữ thời gian bắt đầu và kết thúc của thread
-typedef struct {
+typedef struct
+{
     struct timeval start_time;
     struct timeval end_time;
 } ThreadTiming;
@@ -29,12 +30,12 @@ typedef struct {
 int main(int argc, char *argv[]) // Đã sửa khai báo đúng
 {
     ThreadTiming timing; // Khởi tạo biến timing kiểu ThreadTiming
-    //pthread_self lấy id của thread hiện tại (tức à thread main)
+    // pthread_self lấy id của thread hiện tại (tức à thread main)
     pthread_t mainThread = pthread_self();
     // khởi tạo thread với id mainThread (id của thread main)
     // writetxt truyền vào hàm thực thi trong thread
     // (void*)&timing ép kiểu biến timing về kiểu void và truyền vào hàm write
-    int ret = pthread_create(&mainThread, NULL, writetxt, (void*)&timing);
+    int ret = pthread_create(&mainThread, NULL, writetxt, (void *)&timing);
     if (ret != 0)
     {
         printf("Failed to create thread\n");
@@ -53,7 +54,7 @@ int main(int argc, char *argv[]) // Đã sửa khai báo đúng
 /*Hàm cấp phát động cho chuỗi*/
 char *dynamicString()
 {
-    //Cấp phát động cho chuỗi
+    // Cấp phát động cho chuỗi
     char *str = (char *)malloc(sizeof(char));
     if (str == NULL)
     {
@@ -75,16 +76,16 @@ char *dynamicString()
         if (length == capacity)
         {
             capacity *= 2;
-            // tạo ra con trỏ temp để cấp phát, khi lỗi cấp phái vẫn giữ được 
+            // tạo ra con trỏ temp để cấp phát, khi lỗi cấp phái vẫn giữ được
             // nguyên vẹn chuỗi str
             char *temp = (char *)realloc(str, capacity * sizeof(char));
             if (temp == NULL)
             {
                 printf("Not enough memory!\n");
                 free(str);
-                return NULL; 
+                return NULL;
             }
-            // 
+            //
             str = temp;
         }
     }
@@ -98,7 +99,7 @@ void *writetxt(void *arg)
     printf("Import string: \n");
     char *str = dynamicString();
     // ép kiểu con trỏ arg về kiểu ThreadTiming
-    ThreadTiming* timing = (ThreadTiming*)arg;
+    ThreadTiming *timing = (ThreadTiming *)arg;
     // Ghi lại thời gian bắt đầu của thread
     gettimeofday(&(timing->start_time), NULL);
     // Dùng systemcall open mở file, O_RDWR cấp quyền đọc viết,
@@ -110,7 +111,7 @@ void *writetxt(void *arg)
         return NULL;
     }
     // Ghi 100000 lần vào file
-    for (int i = 1; i < 100000; i++)
+    for (int i = 1; i < 20; i++)
     {
 
         ssize_t wr = write(op, str, strlen(str));
@@ -121,7 +122,7 @@ void *writetxt(void *arg)
     }
     // Đóng file
     close(op);
-    /* Thu hồi bộ nhớ đã cấp phát của con trỏ str 
+    /* Thu hồi bộ nhớ đã cấp phát của con trỏ str
     đc trỏ đến địa chỉ của con trỏ str( trong hàm dynamicString)*/
     free(str);
     // Ghi lại thời gian kết thúc của thread
