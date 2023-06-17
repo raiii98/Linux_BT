@@ -43,9 +43,9 @@ int main(int argc, char *argv[]) // Đã sửa khai báo đúng
     }
     pthread_join(mainThread, NULL); // Đợi thread kết thúc
     // Lấy giá trị thời gian bắt đầu từ biến timing.start_time.tv_sec
-    long long start_microseconds = timing.start_time.tv_sec * 1000000LL + timing.start_time.tv_usec;
+    long long start_microseconds = timing.start_time.tv_usec + timing.start_time.tv_usec;
     // Lấy giá trị thời gian bắt đầu từ biến timing.end_time.tv_sec
-    long long end_microseconds = timing.end_time.tv_sec * 1000000LL + timing.end_time.tv_usec;
+    long long end_microseconds = timing.end_time.tv_usec + timing.end_time.tv_usec;
     // Tính thời gian thread chạy
     long long elapsed_microseconds = end_microseconds - start_microseconds;
     printf("Total time thread: %lld uS\n ", elapsed_microseconds);
