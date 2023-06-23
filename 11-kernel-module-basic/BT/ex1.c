@@ -1,13 +1,25 @@
-#include <linux/module.h>  /* Thu vien nay dinh nghia cac macro nhu module_init va module_exit */
-#include <linux/fs.h>      /* Thu vien nay dinh nghia cac ham allocate major & minor number */
-#include <linux/device.h>  /* Thu vien dinh nghia class, devides */
-#include <linux/cdev.h>    /* Thu vien nay dinh nghia cac ham cdev_init/cdev_add */
-#include <linux/uaccess.h> /* Define copy_to_user(), copy_from_user() */
-#include <linux/slab.h>    /* Define kfree() */
+
+/*************************************
+ *               Include             *
+ *************************************/
+#include <linux/module.h>  /* Define functions macro as module_init and module_exit */
+#include <linux/fs.h>      /* Define functions allocate major & minor number */
+#include <linux/device.h>  /* Define functions class, devides */
+#include <linux/cdev.h>    /* Define functions cdev_init/cdev_add */
+#include <linux/uaccess.h> /* Define functions copy_to_user(), copy_from_user() */
+#include <linux/slab.h>    /* Define functions kfree() */
+
+/*************************************
+ *               Define              *
+ *************************************/
 #define DRIVER_AUTHOR "Raiii quoctoan24898@gmail.com"
 #define DRIVER_DESC "Hello world kernel module"
 #define DRIVER_VERS "1.0"
 #define NPAGES 1
+
+/*************************************
+ *       Definition variable         *
+ *************************************/
 struct m_dev
 {
     int32_t size;
@@ -17,7 +29,10 @@ struct m_dev
     struct device *dev;
     struct cdev m_cdev;
 } mdev;
-/*  Function Prototypes */
+
+/*************************************
+ *       Function Prototypes         *
+ *************************************/
 static int __init m_dev_init(void);
 static void __exit m_dev_exit(void);
 static int m_open(struct inode *inode, struct file *file);
@@ -89,17 +104,20 @@ static ssize_t m_write(struct file *filp, const char __user *user_buf, size_t si
     return to_write;
 }
 
-/* Constructor */
+/*************************************
+ *            Constructor            *
+ *************************************/
 static int __init m_dev_init(void)
 {
+    // 1. Dynamic allocation for read or write
     mdev.kmalloc_ptr = kmalloc(NPAGES * PAGE_SIZE, GFP_KERNEL);
     if (!mdev.kmalloc_ptr)
     {
         pr_err("Failed to allocate memory using kmalloc\n");
-        goto failed_kmalloc;
+        return -ENOMEM;
     }
 
-    // 1. Cấp phát device number
+    // 2. Allocation device number
     if (alloc_chrdev_region(&mdev.dev_numb, 0, 1, "my_device") < 0)
     {
         printk("Failed to register device number dynamically\n");
@@ -107,21 +125,21 @@ static int __init m_dev_init(void)
     }
     pr_info("Major = %d Minor = %d\n", MAJOR(mdev.dev_numb), MINOR(mdev.dev_numb));
 
-    // 2. Tạo struct class
+    // 3. Creat struct class
     if ((mdev.dev_class = class_create(THIS_MODULE, "my_class")) == NULL)
     {
         pr_err("Cannot create the struct class for my device\n");
         goto failed_creat_class;
     }
-    // 3. Tạo device trong class
+    // 4. Creat device in class
     if ((device_create(mdev.dev_class, NULL, mdev.dev_numb, NULL, "my_device")) == NULL)
     {
         pr_err("Cannot create my device\n");
         goto failed_creat_device;
     }
-    // 4.1.
+    // 5.1. Creat character device
     cdev_init(&mdev.m_cdev, &fops);
-    // 4.2.
+    // 5.2. Add device to system
     if ((cdev_add(&mdev.m_cdev, mdev.dev_numb, 1)) < 0)
     {
         pr_err("Cannot add the device to the system\n");
@@ -129,8 +147,6 @@ static int __init m_dev_init(void)
     }
 
     return 0;
-failed_kmalloc:
-    kfree(mdev.kmalloc_ptr);
 
 failed_creat_class:
     class_destroy(mdev.dev_class);
@@ -140,19 +156,21 @@ failed_cdev:
     cdev_del(&mdev.m_cdev);
     return -1;
 }
-
-/* Destructor */
+/*************************************
+ *          Destructor               *
+ *************************************/
 static void __exit m_dev_exit(void)
 {
-    cdev_del(&mdev.m_cdev);
-    device_destroy(mdev.dev_class, mdev.dev_numb);
-    class_destroy(mdev.dev_class);
-    unregister_chrdev_region(mdev.dev_numb, 1);
-    kfree(mdev.kmalloc_ptr);
+    cdev_del(&mdev.m_cdev);                        /* 05 */
+    device_destroy(mdev.dev_class, mdev.dev_numb); /* 04 */
+    class_destroy(mdev.dev_class);                 /* 03 */
+    unregister_chrdev_region(mdev.dev_numb, 1);    /* 02 */
+    kfree(mdev.kmalloc_ptr);                       /* 01 */
     printk("Exit driver\n");
 }
-
+// Macro to register function m_dev_init
 module_init(m_dev_init);
+// Macro to register function m_dev_exit
 module_exit(m_dev_exit);
 
 MODULE_LICENSE("GPL");

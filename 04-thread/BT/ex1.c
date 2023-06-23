@@ -27,7 +27,7 @@ typedef struct
 } ThreadTiming;
 
 /*Hàm main*/
-int main(int argc, char *argv[]) // Đã sửa khai báo đúng
+int main(int argc, char *argv[])
 {
     ThreadTiming timing; // Khởi tạo biến timing kiểu ThreadTiming
     // pthread_self lấy id của thread hiện tại (tức à thread main)
