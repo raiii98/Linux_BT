@@ -77,6 +77,7 @@ static ssize_t m_read(struct file *filp, char __user *user_buf, size_t size, lof
         return -EFAULT;
 
     *offset += to_read;
+    printk("%s\n", mdev.kmalloc_ptr);
 
     return to_read;
 }
