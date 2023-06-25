@@ -70,14 +70,14 @@ static ssize_t m_read(struct file *filp, char __user *user_buf, size_t size, lof
     pr_info("System call read() called...!!!\n");
 
     /* Check size doesn't exceed our mapped area size */
-    to_read = (size > mdev.size - *offset) ? (mdev.size - *offset) : size;
+    to_read = (size > mdev.size - *offset) ? (mdev.size) : size;
 
     /* Copy from mapped area to user buffer */
-    if (copy_to_user(user_buf, mdev.kmalloc_ptr + *offset, to_read))
+    if (copy_to_user(user_buf, mdev.kmalloc_ptr, to_read))
         return -EFAULT;
 
     *offset += to_read;
-    printk("%s\n", mdev.kmalloc_ptr);
+    printk("%s-%d: %s, %ld %ld %d %lld \n", __func__, __LINE__, mdev.kmalloc_ptr, to_read, size, mdev.size, *offset);
 
     return to_read;
 }

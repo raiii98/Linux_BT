@@ -24,6 +24,7 @@ int main(int agc, char arvg[])
     {
         printf("Failed to write to file\n");
     }
+    // lseek(op, 0, SEEK_SET);
     ssize_t re = read(op, buffer, sizeof(buffer)); // system call read.
     if (re == -1)
     {

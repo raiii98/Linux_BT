@@ -11,5 +11,7 @@ all:
 
 prog:
 	$(CC) -o example prog.c $(FLAG_THREAD)
+run:
+	sudo rmmod ex1 && sudo insmod ex1.ko && sudo chmod 0777 /dev/my_device
 clean:
 	make -C $(KDIR) M=`pwd` clean
