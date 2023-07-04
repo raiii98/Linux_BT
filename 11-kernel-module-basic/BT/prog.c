@@ -11,7 +11,7 @@
 char *str = "Hello my devices 1234"; /*String will write to device*/
 char buffer[BUFFER_SIZE];
 
-int main(int agc, char arvg[])
+int main(int argc, char argv[])
 {
     // system call open and licensing read, write for thread
     int op = open("/dev/my_device", O_RDWR);
