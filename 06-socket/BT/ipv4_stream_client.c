@@ -22,8 +22,8 @@ void chat_function(int client_fd)
     char trans_buff[BUFFER_SIZE];
     while (1)
     {
-        memset(trans_buff, 0, sizeof(trans_buff));
-        memset(rec_buff, 0, sizeof(trans_buff));
+        memset(trans_buff, '0', sizeof(trans_buff));
+        memset(rec_buff, '0', sizeof(trans_buff));
         printf("Please enter the message: ");
         fgets(trans_buff, sizeof(trans_buff), stdin);
 

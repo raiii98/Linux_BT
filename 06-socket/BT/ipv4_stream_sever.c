@@ -24,8 +24,8 @@ void chat_function(int new_socket_fd)
 
     while (1)
     {
-        memset(trans_buff, 0, sizeof(trans_buff));
-        memset(rec_buff, 0, sizeof(rec_buff));
+        memset(trans_buff, '0', sizeof(trans_buff));
+        memset(rec_buff, '0', sizeof(rec_buff));
         num_read = read(new_socket_fd, rec_buff, sizeof(rec_buff));
         if (num_read == -1)
         {
@@ -69,8 +69,8 @@ int main(int argc, char *argv[])
     }
     else
         port_numb = atoi(argv[1]);
-    memset(&server_add, 0, sizeof(struct sockaddr_in));
-    memset(&client_add, 0, sizeof(struct sockaddr_in));
+    memset(&server_add, '0', sizeof(struct sockaddr_in));
+    memset(&client_add, '0', sizeof(struct sockaddr_in));
 
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd == -1)
