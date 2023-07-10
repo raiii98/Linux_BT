@@ -40,7 +40,7 @@ void chat_function(int new_socket_fd)
 
         printf("Please respond the message: ");
         fgets(trans_buff, sizeof(trans_buff), stdin);
-        num_write = write(new_socket_fd, trans_buff, sizeof(trans_buff));
+        num_write = write(new_socket_fd, trans_buff, strlen(trans_buff) + 1);
         if (num_write == -1)
         {
             handle_error("write()");

@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     int port_numb;
     int client_fd;
     struct sockaddr_in client_add;
-    memset(&client_add, 0, sizeof(client_add));
+    memset(&client_add, '0', sizeof(client_add));
 
     if (argc < 3)
     {
