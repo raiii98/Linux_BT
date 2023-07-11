@@ -19,38 +19,66 @@
 void chat_function(int new_socket_fd)
 {
 
-    int num_read, num_write;
-    char trans_buff[BUFFER_SIZE], rec_buff[BUFFER_SIZE];
+    pid_t pid = fork();
 
-    while (1)
+    if (pid < 0)
     {
-        memset(trans_buff, '0', sizeof(trans_buff));
-        memset(rec_buff, '0', sizeof(rec_buff));
-        num_read = read(new_socket_fd, rec_buff, sizeof(rec_buff));
-        if (num_read == -1)
-        {
-            handle_error("read()");
-        }
-        if (strncmp("exit", rec_buff, 4))
-        {
-            system("clear");
-            break;
-        }
-        printf("\nMessage from Client: %s\n", rec_buff);
+        // Error occurred.
+        handle_error("fork()");
+    }
+    else if (pid == 0)
+    {
+        char rec_buff[BUFFER_SIZE];
 
-        printf("Please respond the message: ");
-        fgets(trans_buff, sizeof(trans_buff), stdin);
-        num_write = write(new_socket_fd, trans_buff, strlen(trans_buff) + 1);
-        if (num_write == -1)
+        int num_read;
+        while (1)
         {
-            handle_error("write()");
+            memset(rec_buff, 0, sizeof(rec_buff));
+
+            num_read = read(new_socket_fd, rec_buff, sizeof(rec_buff));
+            if (num_read == -1)
+            {
+                handle_error("read()");
+            }
+            else if (num_read == 0)
+            {
+                exit(EXIT_FAILURE);
+            }
+            if (strncmp("exit", rec_buff, 4) == 0)
+            {
+                printf("Client exit ...\n");
+                break;
+            }
+            printf("\nMessage from Client: %s\n", rec_buff);
         }
-        if (strncmp("exit", trans_buff, 4))
+    }
+    else
+    {
+        char trans_buff[BUFFER_SIZE];
+        int num_write;
+
+        while (1)
         {
-            system("clear");
-            break;
+            memset(trans_buff, 0, sizeof(trans_buff));
+
+            printf("Please respond the message: ");
+            fgets(trans_buff, sizeof(trans_buff), stdin);
+            num_write = write(new_socket_fd, trans_buff, strlen(trans_buff));
+            if (num_write == -1)
+            {
+                handle_error("write()");
+            }
+            else if (num_write == 0)
+            {
+                exit(EXIT_FAILURE);
+            }
+            if (strncmp("exit", trans_buff, 4) == 0)
+            {
+                printf("Server exit ...\n");
+                break;
+            }
+            sleep(1);
         }
-        sleep(1);
     }
     close(new_socket_fd);
 }
@@ -69,8 +97,8 @@ int main(int argc, char *argv[])
     }
     else
         port_numb = atoi(argv[1]);
-    memset(&server_add, '0', sizeof(struct sockaddr_in));
-    memset(&client_add, '0', sizeof(struct sockaddr_in));
+    memset(&server_add, 0, sizeof(struct sockaddr_in));
+    memset(&client_add, 0, sizeof(struct sockaddr_in));
 
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd == -1)
@@ -102,7 +130,7 @@ int main(int argc, char *argv[])
         {
             handle_error("accep()");
         }
-        system("clear");
+        printf("\033[H\033[J"); // Clear screen
         printf("Server : got connection \n");
         chat_function(new_socket_fd);
     }

@@ -6,7 +6,7 @@
 #include <netinet/in.h> //  Thư viện chứa các hằng số, cấu trúc khi sử dụng địa chỉ trên internet
 #include <arpa/inet.h>
 #include <unistd.h>
-
+#include <sys/wait.h>
 #define BUFFER_SIZE 256
 #define handle_error(msg)   \
     do                      \
@@ -17,29 +17,68 @@
 
 void chat_function(int client_fd)
 {
-    int numb_write, numb_read;
-    char rec_buff[BUFFER_SIZE];
-    char trans_buff[BUFFER_SIZE];
-    while (1)
+    pid_t pid = fork();
+    if (pid < 0)
     {
-        memset(trans_buff, '0', sizeof(trans_buff));
-        memset(rec_buff, '0', sizeof(trans_buff));
-        printf("Please enter the message: ");
-        fgets(trans_buff, sizeof(trans_buff), stdin);
-
-        numb_write = write(client_fd, trans_buff, sizeof(trans_buff));
-        if (numb_write == -1)
-        {
-            handle_error("write()");
-        }
-        if (strncmp("exit", rec_buff, 4) == 0)
-        {
-            printf("Server exit ...\n");
-            break;
-        }
-        printf("\nMessage from Server: %s\n", rec_buff);
+        // Error occurred.
+        handle_error("fork()");
     }
-    close(client_fd); /*close*/
+    else if (pid == 0)
+    {
+        // Child process: reading from the socket.
+        char rec_buff[BUFFER_SIZE];
+        int numb_read;
+        while (1)
+        {
+            memset(rec_buff, 0, sizeof(rec_buff));
+
+            numb_read = read(client_fd, rec_buff, sizeof(rec_buff));
+            if (numb_read == -1)
+            {
+                handle_error("read()");
+            }
+            else if (numb_read == 0)
+            {
+                exit(EXIT_FAILURE);
+            }
+            if (strncmp("exit", rec_buff, 4) == 0)
+            {
+                printf("Server exit ...\n");
+                break;
+            }
+
+            printf("\nMessage from Server: %s\n", rec_buff);
+        }
+    }
+    else
+    {
+        // Parent process: writing to the socket.
+        char trans_buff[BUFFER_SIZE];
+        int numb_write;
+        while (1)
+        {
+            memset(trans_buff, 0, sizeof(trans_buff));
+            printf("Please enter the message: ");
+            fgets(trans_buff, sizeof(trans_buff), stdin);
+
+            numb_write = write(client_fd, trans_buff, strlen(trans_buff));
+            if (numb_write == -1)
+            {
+                handle_error("write()");
+            }
+            else if (numb_write == 0)
+            {
+                exit(EXIT_FAILURE);
+            }
+
+            if (strncmp("exit", trans_buff, 4) == 0)
+            {
+                printf("Client exit ...\n");
+                break;
+            }
+        }
+    }
+    close(client_fd);
 }
 
 int main(int argc, char *argv[])
@@ -47,7 +86,7 @@ int main(int argc, char *argv[])
     int port_numb;
     int client_fd;
     struct sockaddr_in client_add;
-    memset(&client_add, '0', sizeof(client_add));
+    memset(&client_add, 0, sizeof(client_add));
 
     if (argc < 3)
     {
